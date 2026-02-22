@@ -1,597 +1,378 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 我的书 · siyuliang</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的个人主页</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Cormorant+Garamond:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --book-width: 320px;
+      --book-height: 420px;
+      --cover-color: #2c1810;
+      --cover-light: #4a3328;
+      --page-color: #f5ecd8;
+      --ink: #1a1a1a;
+      --accent: #8b4513;
+      --bg-dark: #1a1510;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1510 0%, #2d2420 50%, #1a1510 100%);
+      font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      color: var(--ink);
+    }
+    .page-title {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(245,236,216,0.9);
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      z-index: 5;
+    }
+    .book-scene {
+      perspective: 1800px;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 40px;
+    }
+    .book {
+      position: relative;
+      width: var(--book-width);
+      height: var(--book-height);
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+    }
+    .book.open { --open: 1; }
+    .book-cover,
+    .book-inner {
+      position: absolute;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      backface-visibility: hidden;
+      transform-origin: left center;
+      border-radius: 0 4px 4px 0;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.2);
+      transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .book-cover.left {
+      left: 0;
+      background: linear-gradient(90deg, var(--cover-color) 0%, var(--cover-light) 30%, var(--cover-color) 100%);
+      border-right: 2px solid #1a120d;
+      transform-origin: right center;
+      border-radius: 4px 0 0 4px;
+    }
+    .book-cover.left::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .book-cover.right {
+      left: 50%;
+      background: linear-gradient(270deg, var(--cover-color) 0%, var(--cover-light) 70%, var(--cover-color) 100%);
+      border-left: 2px solid #1a120d;
+      transform-origin: left center;
+    }
+    .book-cover.right::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .spine {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 16px;
+      height: 100%;
+      margin-left: -8px;
+      background: linear-gradient(90deg, #1a120d, #3d2a20 20%, #2c1810 50%, #3d2a20 80%, #1a120d);
+      transform: rotateY(-90deg);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .book-inner {
+      left: 0;
+      width: 100%;
+      background: var(--page-color);
+      transform-origin: left center;
+      border-radius: 0 4px 4px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease 0.6s;
+    }
+    .book.open .book-inner {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .book.open .book-cover.left {
+      transform: rotateY(-105deg);
+      pointer-events: none;
+    }
+    .book.open .book-cover.right {
+      transform: rotateY(105deg);
+      pointer-events: none;
+    }
+    .toc-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 32px;
+      letter-spacing: 0.15em;
+    }
+    .toc-list { list-style: none; width: 100%; }
+    .toc-list li { margin-bottom: 16px; }
+    .toc-list a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--ink);
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      font-size: 1.05rem;
+    }
+    .toc-list a:hover {
+      background: rgba(139,69,19,0.12);
+      color: var(--accent);
+    }
+    .toc-num {
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      font-weight: 600;
+      min-width: 24px;
+    }
+    .hint {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(245,236,216,0.6);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      animation: fade-pulse 2s ease-in-out infinite;
+    }
+    .hint.hidden { opacity: 0; pointer-events: none; }
+    @keyframes fade-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    .open-btn {
+      position: absolute;
+      bottom: -56px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 28px;
+      background: var(--accent);
+      color: var(--page-color);
+      border: none;
+      border-radius: 24px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .open-btn:hover {
+      background: #a0522d;
+      transform: translateX(-50%) scale(1.02);
+    }
+    .book.open .open-btn { display: none; }
 
-        body {
-            background: #2c1e12;
-            font-family: 'Cormorant Garamond', 'Georgia', serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .book-wrapper {
-            width: 100%;
-            max-width: 1300px;
-            perspective: 4000px;
-            padding: 40px;
-        }
-
-        .book {
-            position: relative;
-            width: 100%;
-            min-height: 700px;
-            transform-style: preserve-3d;
-            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        /* 书本关闭状态 */
-        .book.closed {
-            transform: rotateY(30deg) translateX(60px);
-        }
-
-        /* 书本打开状态 */
-        .book.open {
-            transform: rotateY(0deg) translateX(0);
-        }
-
-        /* 所有页面的基础样式 */
-        .page {
-            position: absolute;
-            width: 50%;
-            height: 100%;
-            min-height: 700px;
-            background: #faf3e8;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            padding: 60px 50px;
-            backface-visibility: visible;
-            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            overflow-y: auto;
-            border-radius: 4px;
-            will-change: transform;
-        }
-
-        /* 左页 - 封面 */
-        .page-left {
-            left: 0;
-            background: #8b5a2b;
-            background-image: linear-gradient(145deg, rgba(230, 200, 160, 0.15) 0%, rgba(100, 60, 20, 0.1) 100%);
-            color: #faf3e8;
-            transform-origin: right center;
-            z-index: 20;
-            border-right: 2px solid #b48c5c;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        /* 书本关闭时 - 左页合上 */
-        .book.closed .page-left {
-            transform: rotateY(40deg) translateX(-40px);
-            box-shadow: 40px 20px 60px rgba(0,0,0,0.7);
-        }
-
-        /* 书本打开时 - 左页打开 */
-        .book.open .page-left {
-            transform: rotateY(-20deg) translateX(-15px);
-            box-shadow: 30px 20px 60px rgba(0,0,0,0.4);
-        }
-
-        /* 右页 - 目录页 */
-        .page-right {
-            right: 0;
-            background: #faf3e8;
-            transform-origin: left center;
-            z-index: 15;
-            border-left: 2px solid #d8c8b0;
-            box-shadow: -5px 10px 30px rgba(0,0,0,0.2);
-        }
-
-        /* 书本关闭时 - 右页合上 */
-        .book.closed .page-right {
-            transform: rotateY(-40deg) translateX(40px);
-            box-shadow: -30px 10px 50px rgba(0,0,0,0.4);
-        }
-
-        /* 书本打开时 - 右页打开 */
-        .book.open .page-right {
-            transform: rotateY(10deg) translateX(20px);
-            box-shadow: -20px 10px 40px rgba(0,0,0,0.2);
-        }
-
-        /* 书脊 */
-        .book::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 15px;
-            bottom: 15px;
-            width: 40px;
-            background: linear-gradient(to right, #5a3e2a, #7b5a3a, #5a3e2a);
-            transform: translateX(-50%) rotateY(0deg);
-            border-radius: 4px;
-            box-shadow: -2px 0 8px rgba(0,0,0,0.3), 2px 0 8px rgba(0,0,0,0.3);
-            z-index: 30;
-        }
-
-        /* 封面内容 - 应用透视效果 */
-        .cover-content {
-            text-align: center;
-            opacity: 0;
-            transform: translateY(20px) perspective(1000px) rotateY(5deg) scale(0.95);
-            transition: all 1s ease;
-            transform-origin: center;
-        }
-
-        .book.open .cover-content {
-            opacity: 1;
-            transform: translateY(0) perspective(1000px) rotateY(2deg) scale(0.98);
-            transition-delay: 0.5s;
-        }
-
-        .cover-title {
-            font-size: 4.5rem;
-            font-weight: 300;
-            letter-spacing: 8px;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-family: 'Cormorant Garamond', serif;
-            transform: perspective(800px) rotateX(2deg);
-        }
-
-        .cover-subtitle {
-            font-size: 1.4rem;
-            font-weight: 300;
-            letter-spacing: 4px;
-            margin-bottom: 60px;
-            font-style: italic;
-            transform: perspective(800px) rotateX(1deg) translateZ(5px);
-        }
-
-        .cover-author {
-            font-size: 1.2rem;
-            border-top: 1px solid rgba(250, 243, 232, 0.3);
-            padding-top: 30px;
-            width: 70%;
-            margin: 0 auto;
-            font-weight: 300;
-            letter-spacing: 2px;
-            transform: perspective(800px) translateZ(10px);
-        }
-
-        /* 目录头部 - 应用透视 */
-        .contents-header {
-            margin-bottom: 50px;
-            opacity: 0;
-            transform: translateX(20px) perspective(1000px) rotateY(-3deg) scale(0.95);
-            transition: all 0.8s ease;
-            transform-origin: left;
-        }
-
-        .book.open .contents-header {
-            opacity: 1;
-            transform: translateX(0) perspective(1000px) rotateY(-1deg) scale(0.98);
-            transition-delay: 0.7s;
-        }
-
-        .contents-header h2 {
-            font-size: 2.8rem;
-            font-weight: 300;
-            color: #3e2e1f;
-            letter-spacing: 4px;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .contents-header .line {
-            width: 60px;
-            height: 1px;
-            background: #b48c5c;
-            margin: 20px 0;
-            transform: perspective(500px) rotateY(-2deg);
-        }
-
-        /* 目录列表项 - 逐个应用透视 */
-        .chapter-item {
-            margin-bottom: 30px;
-            cursor: pointer;
-            opacity: 0;
-            transform: translateX(30px) perspective(800px) rotateY(-5deg) scale(0.9);
-            transition: all 0.5s ease;
-            border-bottom: 1px dashed #e5d5bc;
-            padding-bottom: 20px;
-            transform-origin: left;
-        }
-
-        .chapter-item:nth-child(1) { transition-delay: 0.9s; }
-        .chapter-item:nth-child(2) { transition-delay: 1.1s; }
-        .chapter-item:nth-child(3) { transition-delay: 1.3s; }
-        .chapter-item:nth-child(4) { transition-delay: 1.5s; }
-
-        .book.open .chapter-item {
-            opacity: 1;
-            transform: translateX(0) perspective(800px) rotateY(-2deg) scale(0.95);
-        }
-
-        .chapter-item:hover {
-            transform: translateX(10px) perspective(800px) rotateY(-1deg) scale(0.97) !important;
-        }
-
-        .chapter-link {
-            display: flex;
-            align-items: baseline;
-            gap: 20px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .chapter-num {
-            font-size: 2rem;
-            color: #b48c5c;
-            font-weight: 300;
-            min-width: 60px;
-            transform: perspective(500px) translateZ(5px);
-        }
-
-        .chapter-title {
-            font-size: 1.6rem;
-            color: #3e2e1f;
-            font-weight: 400;
-            margin-bottom: 5px;
-            transform: perspective(500px) translateZ(2px);
-        }
-
-        .chapter-desc {
-            color: #8b6b4f;
-            font-size: 1rem;
-            font-style: italic;
-            transform: perspective(500px) translateZ(1px);
-        }
-
-        /* 章节内容页 */
-        .chapter-page {
-            position: absolute;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            background: #faf3e8;
-            padding: 60px 50px;
-            transform-origin: left center;
-            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            z-index: 25;
-            border-left: 2px solid #d8c8b0;
-            box-shadow: -10px 10px 30px rgba(0,0,0,0.2);
-            overflow-y: auto;
-            transform: rotateY(90deg) translateX(20px);
-            visibility: hidden;
-            opacity: 0;
-        }
-
-        .chapter-page.active {
-            transform: rotateY(10deg) translateX(20px);
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* 返回按钮 */
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #8b6b4f;
-            cursor: pointer;
-            margin-bottom: 40px;
-            font-style: italic;
-            transition: all 0.3s;
-            border: none;
-            background: none;
-            font-size: 1rem;
-            transform: perspective(500px) translateZ(2px);
-        }
-
-        .back-btn:hover {
-            color: #3e2e1f;
-            transform: translateX(-5px) perspective(500px) translateZ(5px);
-        }
-
-        .back-btn::before {
-            content: '←';
-            font-size: 1.2rem;
-        }
-
-        /* 内容卡片 - 应用轻微透视 */
-        .content-card {
-            margin-bottom: 30px;
-            transform: perspective(800px) rotateY(-1deg) translateZ(2px);
-        }
-
-        .content-card h3 {
-            font-size: 1.4rem;
-            color: #3e2e1f;
-            font-weight: 400;
-            margin-bottom: 15px;
-            border-left: 3px solid #b48c5c;
-            padding-left: 15px;
-        }
-
-        .content-card p {
-            color: #5a4a3a;
-            line-height: 1.8;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .timeline-item {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
-            transform: perspective(800px) rotateY(-1deg);
-        }
-
-        .timeline-year {
-            min-width: 80px;
-            color: #b48c5c;
-            font-weight: 500;
-            font-size: 1.1rem;
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 4px 15px;
-            background: #ece1d2;
-            color: #5a4a3a;
-            border-radius: 30px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #d8c8b0;
-            transform: perspective(500px) translateZ(3px);
-        }
-
-        .page-number {
-            position: absolute;
-            bottom: 30px;
-            right: 40px;
-            color: #d8c8b0;
-            font-size: 0.9rem;
-            font-style: italic;
-            transform: perspective(500px) rotateY(-1deg) translateZ(5px);
-        }
-    </style>
+    /* 详情页（同文件内） */
+    .detail-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1a1510 0%, #2d2420 50%, #1a1510 100%);
+      overflow-y: auto;
+      z-index: 10;
+    }
+    .detail-page.active { display: block; }
+    .detail-page .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(245,236,216,0.8);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-bottom: 32px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+    .page-heading {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      color: rgba(245,236,216,0.95);
+    }
+    .content {
+      background: rgba(245,236,216,0.06);
+      border: 1px solid rgba(245,236,216,0.12);
+      border-radius: 12px;
+      padding: 32px;
+      color: rgba(245,236,216,0.9);
+    }
+    .content p { margin-bottom: 16px; }
+    .content p:last-child { margin-bottom: 0; }
+    .content a { color: var(--accent); text-decoration: none; }
+    .content a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-    <div class="book-wrapper">
-        <div class="book closed" id="book">
-            <!-- 左页封面 -->
-            <div class="page page-left" id="cover">
-                <div class="cover-content">
-                    <h1 class="cover-title">我的书</h1>
-                    <div class="cover-subtitle">A BOOK ABOUT ME</div>
-                    <div class="cover-author">siyuliang</div>
-                </div>
-                <div class="page-number" style="color: rgba(250,243,232,0.5);">— 点击封面打开/关闭 —</div>
-            </div>
-
-            <!-- 右页目录 -->
-            <div class="page page-right" id="contents">
-                <div class="contents-header">
-                    <h2>目录</h2>
-                    <div class="line"></div>
-                    <p>CONTENTS</p>
-                </div>
-
-                <ul class="contents-list">
-                    <li class="chapter-item" onclick="openChapter(1)">
-                        <div class="chapter-link">
-                            <span class="chapter-num">01</span>
-                            <div class="chapter-info">
-                                <div class="chapter-title">基本信息</div>
-                                <div class="chapter-desc">关于我 · 现在 · 标签</div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="chapter-item" onclick="openChapter(2)">
-                        <div class="chapter-link">
-                            <span class="chapter-num">02</span>
-                            <div class="chapter-info">
-                                <div class="chapter-title">工作经历</div>
-                                <div class="chapter-desc">走过的路 · 成长的痕迹</div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="chapter-item" onclick="openChapter(3)">
-                        <div class="chapter-link">
-                            <span class="chapter-num">03</span>
-                            <div class="chapter-info">
-                                <div class="chapter-title">AI 路径</div>
-                                <div class="chapter-desc">探索 · 学习 · 思考</div>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="chapter-item" onclick="openChapter(4)">
-                        <div class="chapter-link">
-                            <span class="chapter-num">04</span>
-                            <div class="chapter-info">
-                                <div class="chapter-title">我的生活</div>
-                                <div class="chapter-desc">日常 · 阅读 · 思考</div>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
-                <div class="page-number">— 点击章节阅读 —</div>
-            </div>
-
-            <!-- 章节内容页 -->
-            <div class="chapter-page" id="chapter1">
-                <button class="back-btn" onclick="backToContents()">返回目录</button>
-                <h2 style="font-size: 2rem; color: #3e2e1f; font-weight: 300; margin-bottom: 30px;">基本信息</h2>
-                
-                <div class="content-card">
-                    <h3>关于我</h3>
-                    <p><strong>姓名</strong> siyuliang</p>
-                    <p><strong>坐标</strong> 中国</p>
-                    <p><strong>签名</strong> 保持好奇，持续学习</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>现在</h3>
-                    <p>探索 AI 与 Web 的可能性</p>
-                    <p>每天学习 2 小时</p>
-                    <p>目标：成为有温度的 AI 开发者</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>标签</h3>
-                    <span class="tag">终身学习者</span>
-                    <span class="tag">咖啡爱好者</span>
-                    <span class="tag">代码诗人</span>
-                    <span class="tag">极简主义</span>
-                </div>
-                <div class="page-number">01</div>
-            </div>
-
-            <div class="chapter-page" id="chapter2">
-                <button class="back-btn" onclick="backToContents()">返回目录</button>
-                <h2 style="font-size: 2rem; color: #3e2e1f; font-weight: 300; margin-bottom: 30px;">工作经历</h2>
-                
-                <div class="timeline-item">
-                    <div class="timeline-year">2024 —</div>
-                    <div class="timeline-desc">AI 探索者 · 独立学习与实践 AI 技术</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-year">2022—2024</div>
-                    <div class="timeline-desc">数字游民 · 远程工作与技术写作</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-year">2020—2022</div>
-                    <div class="timeline-desc">初入职场 · 从新人到独立负责</div>
-                </div>
-                <div class="page-number">02</div>
-            </div>
-
-            <div class="chapter-page" id="chapter3">
-                <button class="back-btn" onclick="backToContents()">返回目录</button>
-                <h2 style="font-size: 2rem; color: #3e2e1f; font-weight: 300; margin-bottom: 30px;">AI 路径</h2>
-                
-                <div class="content-card">
-                    <h3>学习之路</h3>
-                    <p>2023.11 · 第一次使用 ChatGPT</p>
-                    <p>2024.01 · 开始学习 Prompt Engineering</p>
-                    <p>2024.04 · 第一个 AI 应用项目</p>
-                    <p>2024.07 · 探索 AI Agents</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>理念</h3>
-                    <p style="font-style: italic;">「AI 不是替代，而是增强」</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>正在学习</h3>
-                    <p>LangChain · 提示词工程 · AI 产品设计</p>
-                </div>
-                <div class="page-number">03</div>
-            </div>
-
-            <div class="chapter-page" id="chapter4">
-                <button class="back-btn" onclick="backToContents()">返回目录</button>
-                <h2 style="font-size: 2rem; color: #3e2e1f; font-weight: 300; margin-bottom: 30px;">我的生活</h2>
-                
-                <div class="content-card">
-                    <h3>日常</h3>
-                    <p>☕️ 咖啡 + 阅读</p>
-                    <p>💻 编码、学习、创造</p>
-                    <p>🚶 散步、思考、放空</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>最近在读</h3>
-                    <p>《深度工作》</p>
-                    <p>《思考，快与慢》</p>
-                    <p>《AI 未来进行式》</p>
-                </div>
-
-                <div class="content-card">
-                    <h3>思考</h3>
-                    <p style="font-style: italic;">「生活不是赶路，而是感受路」</p>
-                </div>
-                <div class="page-number">04</div>
-            </div>
-        </div>
+  <p class="page-title">欢迎来到我的小站</p>
+  <div class="book-scene" id="bookScene">
+    <div class="book" id="book">
+      <div class="book-cover left"></div>
+      <div class="book-cover right"></div>
+      <div class="spine"></div>
+      <div class="book-inner">
+        <h2 class="toc-title">目录</h2>
+        <ul class="toc-list">
+          <li><a href="#personal"><span class="toc-num">1</span> 个人信息</a></li>
+          <li><a href="#work"><span class="toc-num">2</span> 工作经历</a></li>
+          <li><a href="#ai"><span class="toc-num">3</span> AI探索</a></li>
+          <li><a href="#life"><span class="toc-num">4</span> 我的生活</a></li>
+        </ul>
+      </div>
+      <button type="button" class="open-btn" id="openBtn">打开书本</button>
     </div>
+  </div>
+  <p class="hint" id="hint">点击「打开书本」翻阅</p>
 
-    <script>
-        const book = document.getElementById('book');
-        
-        // 打开/关闭书本
-        window.toggleBook = function() {
-            if (book.classList.contains('closed')) {
-                book.classList.remove('closed');
-                book.classList.add('open');
-            } else {
-                book.classList.remove('open');
-                book.classList.add('closed');
-                // 关闭书本时同时关闭所有章节页
-                document.querySelectorAll('.chapter-page').forEach(page => {
-                    page.classList.remove('active');
-                });
-            }
-        };
+  <section id="personal" class="detail-page">
+    <div class="container">
+      <a href="#" class="back-link" data-back>← 返回目录</a>
+      <h1 class="page-heading">个人信息</h1>
+      <div class="content">
+        <p>这里可以填写你的姓名、所在地、联系方式等。</p>
+        <p>例如：某地 · 某行业 · 热爱阅读与创作。</p>
+        <p>你可以随时在本文件中编辑这段内容，替换成自己的介绍。</p>
+      </div>
+    </div>
+  </section>
+  <section id="work" class="detail-page">
+    <div class="container">
+      <a href="#" class="back-link" data-back>← 返回目录</a>
+      <h1 class="page-heading">工作经历</h1>
+      <div class="content">
+        <p>在这里按时间或项目列出你的工作经历。</p>
+        <p>例如：某公司 · 某职位 · 时间段 · 主要职责与成果。</p>
+        <p>编辑本文件中对应区块即可更新本页。</p>
+      </div>
+    </div>
+  </section>
+  <section id="ai" class="detail-page">
+    <div class="container">
+      <a href="#" class="back-link" data-back>← 返回目录</a>
+      <h1 class="page-heading">AI探索</h1>
+      <div class="content">
+        <p>在这里记录你对 AI 的学习、实践与思考。</p>
+        <p>例如：使用过的工具、做过的项目、写过的文章或实验。</p>
+        <p>在本文件中修改对应内容即可更新本页。</p>
+      </div>
+    </div>
+  </section>
+  <section id="life" class="detail-page">
+    <div class="container">
+      <a href="#" class="back-link" data-back>← 返回目录</a>
+      <h1 class="page-heading">我的生活</h1>
+      <div class="content">
+        <p>在这里分享生活点滴：爱好、旅行、阅读、摄影等。</p>
+        <p>可以写一段简短的自述，或列出你喜欢的事物。</p>
+        <p>编辑本文件中对应区块即可更新本页。</p>
+      </div>
+    </div>
+  </section>
 
-        // 打开章节
-        window.openChapter = function(num) {
-            console.log('Opening chapter:', num);
-            
-            // 确保书本是打开状态
-            if (book.classList.contains('closed')) {
-                book.classList.remove('closed');
-                book.classList.add('open');
-            }
-            
-            // 先关闭所有章节页
-            document.querySelectorAll('.chapter-page').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // 打开选中的章节页
-            const chapterPage = document.getElementById('chapter' + num);
-            if (chapterPage) {
-                chapterPage.classList.add('active');
-            }
-        };
+  <script>
+    (function() {
+      var book = document.getElementById('book');
+      var openBtn = document.getElementById('openBtn');
+      var hint = document.getElementById('hint');
+      var bookScene = document.getElementById('bookScene');
 
-        // 返回目录
-        window.backToContents = function() {
-            console.log('Back to contents');
-            document.querySelectorAll('.chapter-page').forEach(page => {
-                page.classList.remove('active');
-            });
-        };
-
-        // 点击封面切换书本状态
-        document.getElementById('cover').addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleBook();
+      if (openBtn && book) {
+        openBtn.addEventListener('click', function() {
+          book.classList.add('open');
+          if (hint) hint.classList.add('hidden');
         });
+      }
 
-        // 页面加载后先显示合上状态，2秒后自动打开
-        setTimeout(() => {
-            book.classList.remove('closed');
-            book.classList.add('open');
-        }, 2000);
-    </script>
+      function showPage(id) {
+        var pages = document.querySelectorAll('.detail-page');
+        pages.forEach(function(p) { p.classList.remove('active'); });
+        var el = id ? document.getElementById(id) : null;
+        if (el) {
+          el.classList.add('active');
+          bookScene.style.display = 'none';
+        } else {
+          bookScene.style.display = 'flex';
+        }
+      }
+
+      function onHashChange() {
+        var hash = (location.hash || '').replace(/^#/, '');
+        if (hash && ['personal','work','ai','life'].indexOf(hash) !== -1) {
+          showPage(hash);
+        } else {
+          showPage(null);
+        }
+      }
+
+      window.addEventListener('hashchange', onHashChange);
+      window.addEventListener('load', onHashChange);
+
+      document.querySelectorAll('[data-back]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          location.hash = '';
+          showPage(null);
+        });
+      });
+
+      document.querySelectorAll('.toc-list a[href^="#"]').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+          var id = (a.getAttribute('href') || '').replace(/^#/, '');
+          if (id) {
+            e.preventDefault();
+            location.hash = id;
+            showPage(id);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
