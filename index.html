@@ -12,7 +12,7 @@
         }
 
         body {
-            background: #2c1e12;  /* 深木色背景 */
+            background: #2c1e12;
             font-family: 'Cormorant Garamond', 'Georgia', serif;
             min-height: 100vh;
             display: flex;
@@ -29,26 +29,36 @@
             padding: 40px;
         }
 
-        /* 打开的书本 */
+        /* 关闭状态的书本 */
         .book {
             position: relative;
             width: 100%;
             min-height: 700px;
             transform-style: preserve-3d;
-            transition: transform 1.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.3, 1);
+        }
+
+        /* 书本关闭状态 - 稍微倾斜 */
+        .book.closed {
+            transform: rotateY(10deg) translateX(30px);
+        }
+
+        /* 书本打开状态 - 更自然的打开角度 */
+        .book.open {
+            transform: rotateY(0deg) translateX(0);
         }
 
         /* 书页基础样式 */
         .page {
             position: absolute;
-            width: 50%;  /* 每页占一半宽度 */
+            width: 50%;
             height: 100%;
             min-height: 700px;
-            background: #faf3e8;  /* 温暖米白 */
+            background: #faf3e8;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             padding: 60px 50px;
             backface-visibility: visible;
-            transition: transform 1.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.3, 1);
             overflow-y: auto;
             border-radius: 4px;
         }
@@ -57,13 +67,9 @@
         .page-left {
             left: 0;
             background: #8b5a2b;
-            background-image: 
-                linear-gradient(145deg, 
-                    rgba(230, 200, 160, 0.15) 0%, 
-                    rgba(100, 60, 20, 0.1) 100%);
+            background-image: linear-gradient(145deg, rgba(230, 200, 160, 0.15) 0%, rgba(100, 60, 20, 0.1) 100%);
             color: #faf3e8;
             transform-origin: right center;
-            transform: rotateY(0deg);
             z-index: 20;
             border-right: 2px solid #b48c5c;
             display: flex;
@@ -72,26 +78,43 @@
             cursor: pointer;
         }
 
-        /* 右页 - 目录 */
+        /* 书本关闭时 - 左页合上 */
+        .book.closed .page-left {
+            transform: rotateY(30deg) translateX(-20px);
+            box-shadow: 30px 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* 书本打开时 - 左页打开 */
+        .book.open .page-left {
+            transform: rotateY(-15deg) translateX(-10px);
+            box-shadow: 30px 20px 60px rgba(0,0,0,0.4);
+        }
+
+        /* 右页 - 目录页（默认隐藏，书本打开后才显示） */
         .page-right {
             right: 0;
             background: #faf3e8;
             transform-origin: left center;
-            transform: rotateY(0deg);
             z-index: 10;
             border-left: 2px solid #d8c8b0;
-            box-shadow: 10px 10px 30px rgba(0,0,0,0.2);
+            box-shadow: -10px 10px 30px rgba(0,0,0,0.2);
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s linear 0.8s, opacity 0.5s ease 0.8s, transform 1.5s cubic-bezier(0.2, 0.8, 0.3, 1);
         }
 
-        /* 书本打开状态 */
-        .book.open .page-left {
-            transform: rotateY(-25deg) translateX(-10px);
-            box-shadow: 20px 20px 50px rgba(0,0,0,0.4);
+        /* 书本关闭时 - 右页藏起来 */
+        .book.closed .page-right {
+            transform: rotateY(-30deg) translateX(20px);
+            visibility: hidden;
+            opacity: 0;
         }
 
+        /* 书本打开时 - 右页显示 */
         .book.open .page-right {
             transform: rotateY(5deg) translateX(10px);
-            box-shadow: -10px 20px 40px rgba(0,0,0,0.2);
+            visibility: visible;
+            opacity: 1;
         }
 
         /* 书脊效果 */
@@ -102,36 +125,21 @@
             top: 15px;
             bottom: 15px;
             width: 40px;
-            background: linear-gradient(
-                to right,
-                #6b4a2a,
-                #8b6b4a,
-                #6b4a2a
-            );
+            background: linear-gradient(to right, #6b4a2a, #8b6b4a, #6b4a2a);
             transform: translateX(-50%);
             border-radius: 4px;
-            box-shadow: 
-                -2px 0 5px rgba(0,0,0,0.2),
-                2px 0 5px rgba(0,0,0,0.2);
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2), 2px 0 5px rgba(0,0,0,0.2);
             z-index: 30;
         }
 
-        /* 书页装订线 */
-        .page-left::after,
-        .page-right::after {
+        /* 装订线 */
+        .page-left::after, .page-right::after {
             content: '';
             position: absolute;
             top: 20px;
             bottom: 20px;
             width: 4px;
-            background: linear-gradient(
-                to bottom,
-                transparent,
-                #b48c5c,
-                #8b6b4a,
-                #b48c5c,
-                transparent
-            );
+            background: linear-gradient(to bottom, transparent, #b48c5c, #8b6b4a, #b48c5c, transparent);
         }
 
         .page-left::after {
@@ -147,7 +155,7 @@
             text-align: center;
             opacity: 0;
             transform: translateY(20px);
-            transition: all 1s ease 0.5s;
+            transition: all 1s ease 0.8s;
         }
 
         .book.open .cover-content {
@@ -189,7 +197,7 @@
             margin-bottom: 50px;
             opacity: 0;
             transform: translateX(20px);
-            transition: all 0.8s ease 0.8s;
+            transition: all 0.8s ease 1s;
         }
 
         .book.open .contents-header {
@@ -234,10 +242,10 @@
             padding-bottom: 20px;
         }
 
-        .chapter-item:nth-child(1) { transition-delay: 1.0s; }
-        .chapter-item:nth-child(2) { transition-delay: 1.2s; }
-        .chapter-item:nth-child(3) { transition-delay: 1.4s; }
-        .chapter-item:nth-child(4) { transition-delay: 1.6s; }
+        .chapter-item:nth-child(1) { transition-delay: 1.2s; }
+        .chapter-item:nth-child(2) { transition-delay: 1.4s; }
+        .chapter-item:nth-child(3) { transition-delay: 1.6s; }
+        .chapter-item:nth-child(4) { transition-delay: 1.8s; }
 
         .book.open .chapter-item {
             opacity: 1;
@@ -251,6 +259,7 @@
             text-decoration: none;
             color: inherit;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .chapter-link:hover {
@@ -283,7 +292,7 @@
             font-style: italic;
         }
 
-        /* 章节内容页 - 右页翻页效果 */
+        /* 章节内容页 - 覆盖在右页上 */
         .chapter-content-page {
             position: absolute;
             right: 0;
@@ -293,7 +302,7 @@
             padding: 60px 50px;
             transform-origin: left center;
             transform: rotateY(90deg);
-            transition: transform 1s cubic-bezier(0.2, 0.9, 0.3, 1);
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1);
             z-index: 5;
             border-left: 2px solid #d8c8b0;
             box-shadow: -10px 10px 30px rgba(0,0,0,0.2);
@@ -354,10 +363,6 @@
             font-size: 1.1rem;
         }
 
-        .timeline {
-            margin-bottom: 20px;
-        }
-
         .timeline-item {
             display: flex;
             gap: 20px;
@@ -388,7 +393,6 @@
             border: 1px solid #d8c8b0;
         }
 
-        /* 装饰 */
         .page-number {
             position: absolute;
             bottom: 30px;
@@ -398,7 +402,6 @@
             font-style: italic;
         }
 
-        /* 响应式 */
         @media (max-width: 768px) {
             .book-wrapper {
                 padding: 10px;
@@ -420,9 +423,10 @@
 </head>
 <body>
     <div class="book-wrapper">
-        <div class="book" id="book">
+        <!-- 初始状态为 closed -->
+        <div class="book closed" id="book">
             <!-- 左页 - 封面 -->
-            <div class="page page-left" id="cover" onclick="toggleBook()">
+            <div class="page page-left" id="cover" onclick="openBook()">
                 <div class="cover-content">
                     <h1 class="cover-title">我的书</h1>
                     <div class="cover-subtitle">A BOOK ABOUT ME</div>
@@ -441,40 +445,40 @@
 
                 <ul class="contents-list">
                     <li class="chapter-item">
-                        <a class="chapter-link" onclick="openChapter(1)">
+                        <div class="chapter-link" onclick="openChapter(1)">
                             <span class="chapter-num">01</span>
                             <div class="chapter-info">
                                 <div class="chapter-title">基本信息</div>
                                 <div class="chapter-desc">关于我 · 现在 · 标签</div>
                             </div>
-                        </a>
+                        </div>
                     </li>
                     <li class="chapter-item">
-                        <a class="chapter-link" onclick="openChapter(2)">
+                        <div class="chapter-link" onclick="openChapter(2)">
                             <span class="chapter-num">02</span>
                             <div class="chapter-info">
                                 <div class="chapter-title">工作经历</div>
                                 <div class="chapter-desc">走过的路 · 成长的痕迹</div>
                             </div>
-                        </a>
+                        </div>
                     </li>
                     <li class="chapter-item">
-                        <a class="chapter-link" onclick="openChapter(3)">
+                        <div class="chapter-link" onclick="openChapter(3)">
                             <span class="chapter-num">03</span>
                             <div class="chapter-info">
                                 <div class="chapter-title">AI 路径</div>
                                 <div class="chapter-desc">探索 · 学习 · 思考</div>
                             </div>
-                        </a>
+                        </div>
                     </li>
                     <li class="chapter-item">
-                        <a class="chapter-link" onclick="openChapter(4)">
+                        <div class="chapter-link" onclick="openChapter(4)">
                             <span class="chapter-num">04</span>
                             <div class="chapter-info">
                                 <div class="chapter-title">我的生活</div>
                                 <div class="chapter-desc">日常 · 阅读 · 思考</div>
                             </div>
-                        </a>
+                        </div>
                     </li>
                 </ul>
                 <div class="page-number">— 点击章节阅读 —</div>
@@ -514,19 +518,17 @@
                 <button class="back-btn" onclick="backToContents()">返回目录</button>
                 <h2 style="font-size: 2rem; color: #3e2e1f; font-weight: 300; margin-bottom: 30px;">工作经历</h2>
                 
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-year">2024 —</div>
-                        <div class="timeline-desc">AI 探索者 · 独立学习与实践 AI 技术</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-year">2022—2024</div>
-                        <div class="timeline-desc">数字游民 · 远程工作与技术写作</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-year">2020—2022</div>
-                        <div class="timeline-desc">初入职场 · 从新人到独立负责</div>
-                    </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2024 —</div>
+                    <div class="timeline-desc">AI 探索者 · 独立学习与实践 AI 技术</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2022—2024</div>
+                    <div class="timeline-desc">数字游民 · 远程工作与技术写作</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2020—2022</div>
+                    <div class="timeline-desc">初入职场 · 从新人到独立负责</div>
                 </div>
                 <div class="page-number">02</div>
             </div>
@@ -586,20 +588,21 @@
 
     <script>
         const book = document.getElementById('book');
-        const contentsPage = document.getElementById('contents');
         const chapterPages = document.querySelectorAll('.chapter-content-page');
-        let isOpen = false;
-
-        // 打开/关闭书本
-        function toggleBook() {
-            if (!isOpen) {
-                book.classList.add('open');
-                isOpen = true;
-            }
+        
+        // 打开书本
+        function openBook() {
+            book.classList.remove('closed');
+            book.classList.add('open');
         }
 
         // 打开章节
         function openChapter(num) {
+            // 确保书本是打开状态
+            if (!book.classList.contains('open')) {
+                openBook();
+            }
+            
             // 先关闭所有章节页
             chapterPages.forEach(page => {
                 page.classList.remove('active');
@@ -608,9 +611,6 @@
             // 打开选中的章节页
             const chapterPage = document.getElementById(`chapter${num}`);
             chapterPage.classList.add('active');
-            
-            // 稍微调整右页角度，让目录页"藏"到后面
-            contentsPage.style.transform = 'rotateY(-5deg)';
         }
 
         // 返回目录
@@ -619,14 +619,11 @@
             chapterPages.forEach(page => {
                 page.classList.remove('active');
             });
-            
-            // 恢复目录页
-            contentsPage.style.transform = 'rotateY(0deg)';
         }
 
-        // 点击封面自动打开
+        // 页面加载后自动打开书本（带延迟，让合上状态先显示一下）
         setTimeout(() => {
-            toggleBook();
+            openBook();
         }, 500);
     </script>
 </body>
