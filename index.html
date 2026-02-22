@@ -3,55 +3,492 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人网页</title>
+    <title>📖 关于我的书 · siyuliang</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #d9c8a9;  /* 旧纸张背景色 */
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.8;
+            color: #3e2e1f;
+            padding: 40px 20px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+        /* 书本容器 */
+        .book {
+            max-width: 1000px;
+            width: 100%;
+            background-color: #f5e8d9;  /* 浅褐色书页 */
+            border-radius: 8px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.3),
+                0 0 0 1px #b87c4b,        /* 书脊阴影 */
+                0 0 0 2px #e5d5bc;         /* 书页边缘 */
+            padding: 50px 60px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* 装订线效果 */
+        .book::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 30px;
+            bottom: 30px;
+            width: 2px;
+            background: linear-gradient(
+                to bottom,
+                transparent,
+                #b87c4b,
+                #8b5a2b,
+                #b87c4b,
+                transparent
+            );
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        /* 书页阴影 */
+        .book::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 10px;
+            bottom: 10px;
+            width: 8px;
+            background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* 标题区 - 像书的扉页 */
+        .book-header {
             text-align: center;
-            max-width: 400px;
+            margin-bottom: 50px;
+            padding-left: 30px;  /* 为装订线留出空间 */
+            border-bottom: 2px solid #d4b28c;
+            padding-bottom: 30px;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
+
+        .book-title {
+            font-size: 3.2rem;
+            font-weight: normal;
+            color: #5a3e2b;
+            text-shadow: 2px 2px 4px rgba(139, 90, 43, 0.2);
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            font-family: 'Book Antiqua', serif;
         }
-        p {
-            color: #666;
-            line-height: 1.6;
+
+        .book-subtitle {
+            font-size: 1.2rem;
+            color: #8b6b4f;
+            font-style: italic;
+            letter-spacing: 2px;
         }
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
+
+        .author-line {
             margin-top: 20px;
-            transition: background 0.3s;
+            font-size: 1.1rem;
+            color: #b87c4b;
         }
-        .btn:hover {
-            background: #764ba2;
+
+        /* 目录样式 - 像书的目录页 */
+        .chapter-toc {
+            padding-left: 30px;
+            margin-bottom: 50px;
+            background: linear-gradient(to right, #f5e8d9, #ecdac8);
+            padding: 25px 30px 25px 60px;
+            border-radius: 4px;
+            border-left: 4px solid #b87c4b;
+        }
+
+        .toc-title {
+            font-size: 1.3rem;
+            color: #5a3e2b;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #6b4f38;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .toc-item:hover {
+            color: #b87c4b;
+            transform: translateX(10px);
+        }
+
+        .toc-number {
+            font-family: 'Georgia', serif;
+            color: #b87c4b;
+            margin-right: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        /* 章节通用样式 */
+        .chapter {
+            padding-left: 30px;
+            margin-bottom: 60px;
+            page-break-inside: avoid;
+        }
+
+        .chapter-header {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 1px dashed #d4b28c;
+            padding-bottom: 15px;
+        }
+
+        .chapter-number {
+            font-size: 3rem;
+            color: #d4b28c;
+            font-weight: bold;
+            font-family: 'Times New Roman', serif;
+            line-height: 1;
+            text-shadow: 2px 2px 0 #e5d5bc;
+        }
+
+        .chapter-title {
+            font-size: 2rem;
+            color: #5a3e2b;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        .chapter-content {
+            color: #4a3729;
+            padding-right: 20px;
+        }
+
+        /* 卡片样式 - 像书中的插页 */
+        .card {
+            background: #fff9f0;
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: 
+                0 4px 8px rgba(100, 70, 40, 0.1),
+                inset 0 1px 0 #fff;
+            border: 1px solid #e5d5bc;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(100, 70, 40, 0.15);
+        }
+
+        .card h3 {
+            color: #6b4f38;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            border-left: 4px solid #b87c4b;
+            padding-left: 15px;
+        }
+
+        .card p {
+            margin-bottom: 10px;
+            color: #5a4a3a;
+        }
+
+        /* 时间线样式 */
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #e5d5bc;
+        }
+
+        .timeline-year {
+            min-width: 80px;
+            font-weight: bold;
+            color: #b87c4b;
+            font-size: 1.2rem;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-content h4 {
+            color: #5a3e2b;
+            margin-bottom: 5px;
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 3px 12px;
+            background: #e5d5bc;
+            color: #5a3e2b;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #b87c4b;
+        }
+
+        /* 页脚 - 像书的版权页 */
+        .book-footer {
+            padding-left: 30px;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #d4b28c;
+            text-align: center;
+            color: #8b6b4f;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .page-number {
+            display: inline-block;
+            padding: 5px 20px;
+            background: #ecdac8;
+            border-radius: 20px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .book {
+                padding: 30px 20px;
+            }
+            
+            .book::before {
+                left: 15px;
+            }
+            
+            .chapter-header {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .chapter-number {
+                font-size: 2rem;
+            }
+            
+            .chapter-title {
+                font-size: 1.5rem;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>你好，我是 siyuliang</h1>
-        <p>欢迎访问我的个人网页！</p>
-        <p>这是我用GitHub Pages创建的第一个网站哦。</p>
-        <a href="#" class="btn">了解更多</a>
+    <div class="book">
+        <!-- 书的扉页 -->
+        <div class="book-header">
+            <h1 class="book-title">关于我的书</h1>
+            <div class="book-subtitle">siyuliang 的故事</div>
+            <div class="author-line">—— 写给我自己和愿意了解我的人 ——</div>
+        </div>
+
+        <!-- 目录页 -->
+        <div class="chapter-toc">
+            <div class="toc-title">📋 目 录</div>
+            <a class="toc-item" href="#chapter1">
+                <span class="toc-number">壹</span>
+                <span>基本信息 · 书的第一页</span>
+            </a>
+            <a class="toc-item" href="#chapter2">
+                <span class="toc-number">贰</span>
+                <span>工作经历 · 走过的路</span>
+            </a>
+            <a class="toc-item" href="#chapter3">
+                <span class="toc-number">叁</span>
+                <span>AI路径 · 与未来的对话</span>
+            </a>
+            <a class="toc-item" href="#chapter4">
+                <span class="toc-number">肆</span>
+                <span>我的生活 · 平凡的闪光</span>
+            </a>
+        </div>
+
+        <!-- 第一章：基本信息 -->
+        <div class="chapter" id="chapter1">
+            <div class="chapter-header">
+                <div class="chapter-number">壹</div>
+                <div class="chapter-title">基本信息</div>
+            </div>
+            <div class="chapter-content">
+                <div class="card">
+                    <h3>📌 关于我</h3>
+                    <p><strong>姓名：</strong> siyuliang</p>
+                    <p><strong>坐标：</strong> 地球 · 中国</p>
+                    <p><strong>签名：</strong> 保持好奇，持续学习，用代码书写故事</p>
+                </div>
+                
+                <div class="card">
+                    <h3>🎯 当前状态</h3>
+                    <p>✨ 探索 AI 与 Web 的无限可能</p>
+                    <p>📚 每天保持学习 2 小时</p>
+                    <p>🎯 目标：成为一名有温度的 AI 开发者</p>
+                </div>
+
+                <div class="card">
+                    <h3>🔖 标签</h3>
+                    <span class="tag">终身学习者</span>
+                    <span class="tag">咖啡爱好者</span>
+                    <span class="tag">代码诗人</span>
+                    <span class="tag">科技乐观派</span>
+                    <span class="tag">极简主义</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二章：工作经历 -->
+        <div class="chapter" id="chapter2">
+            <div class="chapter-header">
+                <div class="chapter-number">贰</div>
+                <div class="chapter-title">工作经历</div>
+            </div>
+            <div class="chapter-content">
+                <div class="timeline-item">
+                    <div class="timeline-year">2024 - 至今</div>
+                    <div class="timeline-content">
+                        <h4>AI 探索者</h4>
+                        <p>独立学习与实践 AI 技术，包括 Prompt Engineering、AI 应用开发</p>
+                        <p>✨ 主要项目：个人 AI 助手、智能内容生成</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">2022 - 2024</div>
+                    <div class="timeline-content">
+                        <h4>数字游民 · 自由职业</h4>
+                        <p>尝试远程工作与数字游民生活方式</p>
+                        <p>💻 涉猎领域：Web开发、技术写作</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-year">2020 - 2022</div>
+                    <div class="timeline-content">
+                        <h4>初入职场</h4>
+                        <p>从职场新人到独立负责项目的成长历程</p>
+                        <p>🌱 学会了：沟通、协作、持续学习</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三章：AI路径 -->
+        <div class="chapter" id="chapter3">
+            <div class="chapter-header">
+                <div class="chapter-number">叁</div>
+                <div class="chapter-title">AI 路径</div>
+            </div>
+            <div class="chapter-content">
+                <div class="card">
+                    <h3>🤖 我的 AI 学习之路</h3>
+                    <p>2023 年 11 月 · 第一次使用 ChatGPT，被震撼</p>
+                    <p>2024 年 1 月  · 开始系统学习 Prompt Engineering</p>
+                    <p>2024 年 4 月  · 完成第一个 AI 应用项目</p>
+                    <p>2024 年 7 月  · 开始关注 AI Agents 与自动化</p>
+                    <p>现在 · 每天与 AI 共舞，探索更多可能</p>
+                </div>
+
+                <div class="card">
+                    <h3>💡 我的 AI 理念</h3>
+                    <p>「AI 不是替代，而是增强。它让人类更有创造力，而不是更懒惰。」</p>
+                    <p style="margin-top: 15px;">✨ 我相信：未来的核心竞争力是「人 + AI」的协作能力</p>
+                </div>
+
+                <div class="card">
+                    <h3>📚 正在学习</h3>
+                    <p>🔹 LangChain 与 AI Agents</p>
+                    <p>🔹 提示词工程进阶</p>
+                    <p>🔹 AI 应用产品设计</p>
+                    <p>🔹 机器学习基础</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四章：我的生活 -->
+        <div class="chapter" id="chapter4">
+            <div class="chapter-header">
+                <div class="chapter-number">肆</div>
+                <div class="chapter-title">我的生活</div>
+            </div>
+            <div class="chapter-content">
+                <div class="card">
+                    <h3>☕️ 日常片段</h3>
+                    <p>早上 · 一杯咖啡 + 半小时阅读</p>
+                    <p>白天 · 编码、学习、创造</p>
+                    <p>傍晚 · 散步、思考、放空</p>
+                    <p>晚上 · 记录、复盘、规划</p>
+                </div>
+
+                <div class="card">
+                    <h3>📖 最近在读</h3>
+                    <p>《深度工作》- Cal Newport</p>
+                    <p>《思考，快与慢》- Daniel Kahneman</p>
+                    <p>《AI 未来进行式》- 李开复</p>
+                </div>
+
+                <div class="card">
+                    <h3>🎵 生活调味剂</h3>
+                    <p>🎧 音乐 · 后摇 | 爵士 | 轻音乐</p>
+                    <p>📺 电影 · 科幻 | 剧情 | 纪录片</p>
+                    <p>🏃 运动 · 跑步 | 瑜伽 | 徒步</p>
+                </div>
+
+                <div class="card">
+                    <h3>💭 一些思考</h3>
+                    <p>「生活不是赶路，而是感受路。」</p>
+                    <p>「代码是逻辑的诗歌，生活是诗歌的逻辑。」</p>
+                    <p>「保持好奇，保持善良，保持行动。」</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 书的版权页 -->
+        <div class="book-footer">
+            <p>✨ 感谢你翻开这本书 ✨</p>
+            <p>每一页都是真实的碎片，拼凑成此刻的我</p>
+            <p>如果你也在自己的路上，很高兴与你相遇</p>
+            <div class="page-number">
+                <span>—— 未完待续 · 持续更新 ——</span>
+            </div>
+        </div>
     </div>
+
+    <!-- 简单的平滑滚动 -->
+    <script>
+        document.querySelectorAll('.toc-item').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
 </body>
 </html>
